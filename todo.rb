@@ -1,31 +1,36 @@
 class Todo < ActiveRecord::Base
-  def overdue?
-    due_date < Date.today
+  def self.overdue
+    where("due_date < ?", Date.today)
   end
 
-  def due_today?
-    due_date == Date.today
+  def self.due_today
+    where("due_date = ?", Date.today)
   end
 
-  def due_later?
-    due_date > Date.today
+  def self.due_later
+    where("due_date > ?", Date.today)
   end
 
   def to_displayable_string
     "#{id}. [#{completed ? "X" : " "}] #{todo_text} #{due_date}"
   end
 
-  def self.show_list
-    todo_overdue_string = ["Overdue"]
-    todo_due_today_string = ["\nDue Today"]
-    todo_due_later_string = ["\nDue Later"]
+  def self.to_displayable_list
+    all.map { |todo| todo.to_displayable_string }
+  end
 
-    all.map { |todo|
-      todo.overdue? ? todo_overdue_string.push(todo.to_displayable_string) :
-        todo.due_today? ? todo_due_today_string.push(todo.to_displayable_string) :
-        todo_due_later_string.push(todo.to_displayable_string)
-    }
-    puts "\nMy Todo-list\n\n#{todo_overdue_string.join("\n")}\n #{todo_due_today_string.join("\n")}\n #{todo_due_later_string.join("\n")}"
+  def self.show_list
+    puts "Overdue\n"
+    puts overdue.to_displayable_list
+    puts "\n\n"
+
+    puts "Due Today\n"
+    puts due_today.to_displayable_list
+    puts "\n\n"
+
+    puts "Due Later\n"
+    puts due_later.to_displayable_list
+    puts "\n\n"
   end
 
   def self.add_task(new_todo)
